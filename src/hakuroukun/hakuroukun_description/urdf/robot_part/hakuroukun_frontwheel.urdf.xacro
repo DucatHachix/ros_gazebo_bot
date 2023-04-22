@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="hakuroukun_base_link">
+  <xacro:macro name="hakuroukun_base_link">
+    <!-- Base link is the center of the robot's bottom plate -->
+    <link name="base_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 ${pi}"/>
+        <geometry>
+          <mesh filename="package://hakuroukun_description/meshes/hakuroukun_base_link.stl" scale="0.001 0.001 0.001"/>
+        </geometry>
+        <!-- <material name="light steel blue"/> -->
+      </visual>
+      
+      <collision>
+        <origin xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://hakuroukun_description/meshes/hakuroukun_base_link.stl" scale="0.001 0.001 0.001"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Inertial link stores the robot's inertial information -->
+    <link name="inertial_link">
+      <inertial>
+        <mass value="50" />
+        <origin xyz="0 0 0" />
+        <inertia ixx="0.5" ixy="0" ixz="0" iyy="0.5" iyz="0" izz="0.5" />
+      </inertial>
+    </link>
+
+    <joint name="inertial_joint" type="fixed">
+      <origin xyz="0 0 0  " rpy="0 0 0" />
+      <parent link="base_link" />
+      <child link="inertial_link" />
+    </joint>
+
+    <gazebo reference="base_link">
+      <material>Gazebo/Truck</material>
+    </gazebo>
+  </xacro:macro>
+</robot>

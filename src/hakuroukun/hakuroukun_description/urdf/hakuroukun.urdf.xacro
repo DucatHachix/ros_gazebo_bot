@@ -1,0 +1,124 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="hakuroukun">
+
+  <!-- Constant -->
+  <!-- <xacro:property name="bottom_plate_to_wheel_plate" value="0.0625"/>
+  <xacro:property name="distance_two_wheel_plate" value="0.46"/>
+  <xacro:property name="wheel_plate_length" value="0.265"/>
+  <xacro:property name="wheel_radius" value="0.115"/>
+  <xacro:property name="wheel_length" value="0.09"/>
+  <xacro:property name="base_width" value="0.125"/>
+  <xacro:property name="base_length" value="0.7"/>
+  <xacro:property name="device_frame_to_base_front" value="0.14"/>
+  <xacro:property name="basket_length" value="0.645"/> -->
+
+  <xacro:property name="backwheel_axis_length" value="0.8" />
+  <xacro:property name="backwheel_axis_to_frontwheel_axis" value="1" />
+  <xacro:property name="wheel_radius" value="0.125" />
+  <xacro:property name="base_link_to_trunk_z" value="0.35" />
+  <xacro:property name="trunk_to_front_y" value="0.35" />
+  <xacro:property name="trunk_to_saddle_z" value="0.35" />
+  
+
+  <!-- Material color -->
+  <!-- <material name="light steel blue">
+    <color rgba="${176/255} ${196/255} ${222/255} 1"/>
+  </material>
+
+  <material name="slate gray">
+    <color rgba="${112/255} ${128/255} ${144/255} 1"/>
+  </material>
+
+  <material name="cadet blue">
+    <color rgba="${95/255} ${158/255} ${160/255} 1"/>
+  </material> -->
+
+  <!-- Extras -->
+  <xacro:arg name="robot_namespace" default="$(optenv ROBOT_NAMESPACE /)" />
+
+  <!-- Included URDF/XACRO Files -->
+  <xacro:include filename="$(find hakuroukun_description)/urdf/robot_part/hakuroukun_base_link.urdf.xacro" />
+  <xacro:include filename="$(find hakuroukun_description)/urdf/robot_part/hakuroukun_right_backwheel.urdf.xacro" />
+  <xacro:include filename="$(find hakuroukun_description)/urdf/robot_part/hakuroukun_left_backwheel.urdf.xacro" />
+  <xacro:include filename="$(find hakuroukun_description)/urdf/robot_part/hakuroukun_frontwheel.urdf.xacro" />
+
+  <!-- <xacro:property name="caster_wheel_yaml" value="$(find hakuroukun_description)/config/diffbot/caster_wheel.yaml" />
+  <xacro:property name="caster_wheel_props" value="${xacro.load_yaml(caster_wheel_yaml)}"/> -->
+
+  <!-- Base_link macros -->
+  <xacro:hakuroukun_base_link/>
+
+  <!-- Base footprint is on the ground under the robot -->
+  <link name="base_footprint"/>
+
+  <joint name="base_footprint_joint" type="fixed">
+    <origin xyz="0 0 -wheel_radius" rpy="0 0 0" />
+    <parent link="base_footprint" />
+    <child link="base_link" />
+  </joint>
+
+
+  <!-- Left BackWheel macros -->
+  <xacro:hakuroukun_left_backwheel wheel_prefix="left_backwheel">
+    <origin xyz="-${backwheel_axis_length/2} 0 0" rpy="0 0 0" />
+  </xacro:hakuroukun_left_backwheel>
+
+  <!-- Right BackWheel macros -->
+  <xacro:hakuroukun_right_backwheel wheel_prefix="right_backwheel">
+    <origin xyz="${backwheel_axis_length/2} 0 0" rpy="0 0 0" />
+  </xacro:hakuroukun_right_backwheel>
+
+  <!-- FrontWheel macros -->
+  <xacro:hakuroukun_frontwheel wheel_prefix="front_wheel">
+    <origin xyz="0 ${backwheel_axis_to_frontwheel_axis} 0" rpy="0 0 0" />
+  </xacro:hakuroukun_frontwheel>
+
+  <!-- Back Caster Wheel -->
+  <!-- <xacro:caster_wheel prefix="left" reflect="-1" dx="${distance_two_wheel_plate/2}" dy="${wheel_plate_length/2-0.02}"
+    wheel_props="${caster_wheel_props}">
+  </xacro:caster_wheel>
+  <xacro:caster_wheel prefix="right" reflect="-1" dx="${distance_two_wheel_plate/2}" dy="-${wheel_plate_length/2-0.02}"
+    wheel_props="${caster_wheel_props}">
+  </xacro:caster_wheel> -->
+  
+  <!-- Gazebo plugin for ROS Control -->
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>$(arg robot_namespace)</robotNamespace>
+    </plugin>
+  </gazebo>
+
+  <!-- Gazebo plugin for IMU -->
+  <gazebo>
+    <plugin name="imu_controller" filename="libhector_gazebo_ros_imu.so">
+      <robotNamespace>$(arg robot_namespace)</robotNamespace>
+      <updateRate>50.0</updateRate>
+      <bodyName>base_link</bodyName>
+      <topicName>imu/data</topicName>
+      <accelDrift>0.005 0.005 0.005</accelDrift>
+      <accelGaussianNoise>0.005 0.005 0.005</accelGaussianNoise>
+      <rateDrift>0.005 0.005 0.005 </rateDrift>
+      <rateGaussianNoise>0.005 0.005 0.005 </rateGaussianNoise>
+      <headingDrift>0.005</headingDrift>
+      <headingGaussianNoise>0.005</headingGaussianNoise>
+    </plugin>
+  </gazebo>
+
+  <!-- Gazebo plugin for GNSS -->
+  <gazebo>
+    <plugin name="gps_controller" filename="libhector_gazebo_ros_gps.so">
+      <robotNamespace>$(arg robot_namespace)</robotNamespace>
+      <updateRate>40</updateRate>
+      <bodyName>base_link</bodyName>
+      <frameId>gps_link</frameId>
+      <topicName>navsat/fix</topicName>
+      <velocityTopicName>navsat/vel</velocityTopicName>
+      <referenceLatitude>$(arg origin_lat)</referenceLatitude>
+      <referenceLongitude>$(arg origin_lon)</referenceLongitude>
+      <referenceHeading>180</referenceHeading>
+      <referenceAltitude>0</referenceAltitude>
+      <drift>0.0001 0.0001 0.0001</drift>
+    </plugin>
+  </gazebo> 
+
+</robot>
