@@ -1,0 +1,11 @@
+<library path="lib/libhakuroukun_hardware_gazebo">
+
+  <class
+    name="hakuroukun_hardware_gazebo/HakuroukunHardwareGazebo"
+    type="hakuroukun_hardware_gazebo::HakuroukunHardwareGazebo"
+    base_class_type="gazebo_ros_control::RobotHWSim">
+    <description>
+      Steer Book arm simulation interface.
+    </description>
+  </class>
+</library>

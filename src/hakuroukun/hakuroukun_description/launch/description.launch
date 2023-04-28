@@ -1,10 +1,9 @@
 <?xml version="1.0"?>
 
+<!-- Load the robot description to the ROS parameter server.-->
 <launch>
+    <arg name="model" default="$(find hakuroukun_description)/urdf/hakuroukun.urdf.xacro"/>
 
-  <arg name="robot_namespace" default="hakuroukun"/>
-
-  <param name="robot_description" command="$(find xacro)/xacro '$(find hakuroukun_description)/urdf/hakuroukun.urdf.xacro'
-    robot_namespace:=$(arg robot_namespace)" />
-
+    <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
 </launch>
+

@@ -9,8 +9,8 @@
 -->
 <robot name="wheel" xmlns:xacro="http://wiki.ros.org/xacro">
   <!-- Include xacro for materials and inertials -->
-  <xacro:include filename="$(find hakuroukun_description)/urdf/robot_part/materials.xacro"/>
-  <xacro:include filename="$(find hakuroukun_description)/urdf/robot_part/inertials.xacro"/>
+  <xacro:include filename="$(find hakuroukun_description)/urdf/robot_part/hakuroukun_materials.xacro"/>
+  <xacro:include filename="$(find hakuroukun_description)/urdf/robot_part/hakuroukun_inertials.xacro"/>
 
   <!-- Properties -->
   <xacro:property name="steer_effort" value="10.0"/>
@@ -20,6 +20,7 @@
   <xacro:property name="wheel_radius" value="0.125"/>
   <xacro:property name="b2f_axis_distance" value="1.1"/>
   <xacro:property name="b_axis_length" value="0.8"/>
+  <xacro:property name="base_link_to_steer_link_height" value="0.165"/>
   
   <!-- Bicycle model front steering link - FRONT REVOLUTE -->
   <xacro:macro name="front_steer"
@@ -31,7 +32,6 @@
       steer_mass
       base_length
       base_width
-      axle_offset
       steer_height">
     <link name="${name}_steer_link">
       <visual>
@@ -56,10 +56,10 @@
     <joint name="${name}_steer_joint" type="revolute">
       <parent link="${parent}_link"/>
       <child link="${name}_steer_link"/>
-      <origin xyz="${b2f_axis_distance} 0 ${steer_height}" rpy="0 0 0"/>
+      <origin xyz="${b2f_axis_distance/2} 0 ${steer_height}" rpy="0 0 0"/>
       <axis xyz="0 0 1"/>
       <limit effort="${steer_effort}"
-             lower="${-180.0 * deg_to_rad}" upper="${180.0 * deg_to_rad}"
+             lower="${-steer_limit_deg * deg_to_rad}" upper="${steer_limit_deg * deg_to_rad}"
              velocity="${steer_velocity}"/>
     </joint>
 
@@ -90,14 +90,14 @@
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="package://hakuroukun_description/meshes/hakuroukun_front_wheel.stl" scale="0.001 0.001 0.001" />
+          <mesh filename="package://hakuroukun_description/meshes/Ver2/hakuroukun_front_wheel.stl" scale="0.001 0.001 0.001" />
         </geometry>
         <material name="light_grey"/>
       </visual>
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="package://hakuroukun_description/meshes/hakuroukun_front_wheel.stl" scale="0.001 0.001 0.001" />
+          <mesh filename="package://hakuroukun_description/meshes/Ver2/hakuroukun_front_wheel.stl" scale="0.001 0.001 0.001" />
         </geometry>
       </collision>
       <xacro:wheel_inertial 
@@ -112,17 +112,6 @@
       <xacro:insert_block name="origin"/>
       <axis xyz="0 1 0"/>
     </joint>
-
-    <!-- <transmission name="${name}_steer_joint_trans">
-      <type>transmission_interface/SimpleTransmission</type>
-      <actuator name="${name}_steer_joint_motor">
-        <mechanicalReduction>1</mechanicalReduction>
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-      </actuator>
-      <joint name="${name}_wheel_joint">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-      </joint>
-    </transmission> -->
 
     <gazebo reference="${name}_wheel_link">
       <material>Gazebo/Grey</material>
@@ -148,14 +137,14 @@
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="package://hakuroukun_description/meshes/hakuroukun_back_wheel.stl" scale="0.001 0.001 0.001" />
+          <cylinder radius="${wheel_radius}" length="${wheel_thickness}"/>
         </geometry>
         <material name="light_grey"/>
       </visual>
       <collision>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <geometry>
-          <mesh filename="package://hakuroukun_description/meshes/hakuroukun_back_wheel.stl" scale="0.001 0.001 0.001" />
+          <cylinder radius="${wheel_radius}" length="${wheel_thickness}"/>
         </geometry>
       </collision>
       <xacro:wheel_inertial 
@@ -168,7 +157,7 @@
       <parent link="${parent}_link"/>
       <child link="${name}_wheel_link"/>
       <xacro:insert_block name="origin"/>
-      <axis xyz="0 1 0"/>
+      <axis xyz="0 0 1"/>
     </joint>
 
     <transmission name="${name}_wheel_joint_trans">
@@ -238,6 +227,4 @@
       <material>Gazebo/Grey</material>
     </gazebo>
   </xacro:macro>
-
-
 </robot>

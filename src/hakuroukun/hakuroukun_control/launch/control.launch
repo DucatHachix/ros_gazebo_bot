@@ -1,19 +1,22 @@
-<?xml version="1.0"?>
+<!-- Controllers launch file
+
+    Load parameters, launch controllers and a robot state publisher.
+    Primarily for controllers using ros_control and related frameworks.
+ -->
 <launch>
-    <!-- Load joint controller configurations from YAML file to parameter server -->
-    <rosparam file="$(find hakuroukun_control)/config/control.yaml" command="load"/>
+    <!-- Load robot description -->
+    <include file="$(find hakuroukun_description)/launch/description.launch" >
+    </include>
 
-    <!-- load the controllers -->
-    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
-          output="screen" ns="/hakuroukun" 
-          args="front_steering_controller 
-                rear_left_wheel_controller
-                rear_right_wheel_controller 
-                joint_state_controller"/>
+    <!-- Load controller parameters -->
+    <rosparam command="load" file="$(find hakuroukun_control)/config/hakuroukun_control.yaml" />
+    <rosparam command="load" file="$(find hakuroukun_control)/config/hakuroukun_gains.yaml" />
+    <rosparam command="load" file="$(find hakuroukun_control)/config/hakuroukun_hardware_gazebo.yaml" />
 
-    <!-- convert joint states to TF transforms for rviz, etc -->
-    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
-          respawn="false" output="screen">
-    </node>
-
+    <!-- Spawn the controllers -->
+    <node pkg="controller_manager" type="spawner" name="base_controller_spawner"
+        args="joint_state_publisher ackermann_steering_controller" />
+   
+    <!-- Launch the robot state publisher -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
 </launch>
