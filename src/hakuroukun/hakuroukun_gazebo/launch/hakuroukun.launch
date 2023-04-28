@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+
+<launch>
+    <!-- World config -->
+    <arg name="paused" default="false"/>
+    <arg name="use_sim_time" default="true"/>
+    <arg name="gui" default="true"/>
+    <arg name="headless" default="false"/>
+    <arg name="debug" default="false"/>
+  
+    <!-- Robot config -->
+    <arg name="model" default="$(find hakuroukun_description)/urdf/hakuroukun.urdf.xacro"/>
+    <arg name="namespace" default="/hakuroukun" />
+    <arg name="cmd_timeout" default="0.5"/>
+    <arg name="x" default="0.0"/>
+    <arg name="y" default="0.0"/>
+    <arg name="z" default="1.0" />
+    <arg name="roll" default="0.0"/>
+    <arg name="pitch" default="0.0"/>
+    <arg name="yaw" default="0.0"/>
+
+    <group ns="$(arg namespace)">
+        <!-- Gazebo  -->
+        <include file="$(find gazebo_ros)/launch/empty_world.launch">
+            <arg name="debug" value="$(arg debug)" />
+            <arg name="gui" value="$(arg gui)" />
+            <arg name="paused" value="$(arg paused)"/>
+            <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+            <arg name="headless" value="$(arg headless)"/>
+        </include>
+
+        <!-- Load the robot description -->
+        <param name="robot_description" command="$(find xacro)/xacro $(arg model)"/>
+
+        <node name="spawn_vehicle" pkg="gazebo_ros" type="spawn_model"
+            args="-urdf
+                -param robot_description
+                -model hakuroukun
+                -gazebo_namespace /$(arg namespace)/gazebo"
+            respawn="false" output="screen" />
+    </group>
+</launch>
